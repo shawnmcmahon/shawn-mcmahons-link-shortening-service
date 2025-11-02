@@ -24,6 +24,9 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  // Ensure proper asset generation and serving
+  poweredByHeader: false,
+  compress: true,
 };
 
 export default nextConfig;

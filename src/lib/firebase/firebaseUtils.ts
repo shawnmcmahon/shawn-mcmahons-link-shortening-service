@@ -131,10 +131,13 @@ export const createShortLink = async (
     // Generate a unique short code
     let attempts = 0;
     let isUnique = false;
+    shortCode = generateShortCode(); // Initialize before loop
     while (!isUnique && attempts < 10) {
-      shortCode = generateShortCode();
       isUnique = !(await checkShortCodeExists(shortCode));
-      attempts++;
+      if (!isUnique) {
+        shortCode = generateShortCode();
+        attempts++;
+      }
     }
     if (!isUnique) {
       throw new Error("Failed to generate a unique short code. Please try again.");
