@@ -79,6 +79,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID
 
 ## Step 4: Update Firebase Authentication Settings
 
+### 4.1: Add Vercel Domain to Authorized Domains
+
 You need to add your Vercel domain to Firebase Auth allowed domains:
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
@@ -88,6 +90,79 @@ You need to add your Vercel domain to Firebase Auth allowed domains:
 5. Add your Vercel domain (e.g., `your-project.vercel.app`)
 6. If you have a custom domain, add that too
 7. Click **"Done"**
+
+### 4.2: Configure Google OAuth in Google Cloud Console
+
+**Important:** If Google Sign-In works locally but not in production, you need to configure OAuth redirect URIs in Google Cloud Console. Unfortunately, **this cannot be done entirely in Firebase Console** - you need to access Google Cloud Console.
+
+**Why both are needed:**
+- **Firebase Authorized Domains** (Step 4.1): Controls which domains Firebase Auth accepts requests from
+- **Google Cloud OAuth Settings** (Step 4.2): Controls which domains Google's OAuth service accepts - this is what's causing the popup to close immediately
+
+**Prerequisites - Verify Google Sign-In is enabled:**
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Navigate to **Authentication** → **Sign-in method**
+3. Verify **Google** provider is enabled (toggle should be ON)
+4. If not enabled, click **Google**, toggle **Enable** to ON, enter a project support email, and click **Save**
+5. This should automatically create an OAuth 2.0 Client ID in Google Cloud Console
+
+**To configure OAuth redirect URIs:**
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - **Note:** This is the same project as your Firebase project (uses the same project ID)
+   - If you don't have access, you may need to enable Google Cloud Console access for your Firebase project
+2. Select your Firebase project (same project ID)
+3. Navigate to **APIs & Services** → **Credentials**
+
+4. **If you see OAuth 2.0 Client IDs:**
+   - Find your OAuth 2.0 Client ID (usually named "Web client (auto created by Google Service)" or similar)
+   - Click to edit it
+   - Under **"Authorized JavaScript origins"**, add:
+     - `https://your-project.vercel.app`
+     - `https://your-custom-domain.com` (if applicable)
+   - Under **"Authorized redirect URIs"**, add:
+     - `https://your-project.vercel.app/__/auth/handler`
+     - `https://your-custom-domain.com/__/auth/handler` (if applicable)
+   - Click **"Save"**
+
+5. **If you see "No OAuth clients to display":**
+   
+   **Step A: Verify Firebase setup**
+   - Go to Firebase Console → Authentication → Sign-in method
+   - Make sure **Google** provider is enabled (toggle ON)
+   - If it wasn't enabled, enable it now and wait 2-3 minutes
+   - Refresh the Google Cloud Console credentials page
+   
+   **Step B: Check OAuth Consent Screen (Required for manual creation)**
+   - In Google Cloud Console, go to **APIs & Services** → **OAuth consent screen**
+   - If you see "App is not configured", you need to configure it:
+     - User Type: Choose **External** (unless you have a Google Workspace)
+     - Fill in App name, Support email, Developer contact
+     - Click **Save and Continue**
+     - Skip Scopes (click **Save and Continue**)
+     - Skip Test users (click **Save and Continue**)
+     - Review and **Back to Dashboard**
+   
+   **Step C: Create OAuth Client (if still not visible after Step A)**
+   - Go back to **APIs & Services** → **Credentials**
+   - Click **"+ CREATE CREDENTIALS** → **OAuth client ID**
+   - Application type: **Web application**
+   - Name: `Firebase Web Client` (or any name)
+   - **Authorized JavaScript origins:**
+     - `http://localhost:3000` (for local dev)
+     - `https://your-project.vercel.app`
+     - `https://your-custom-domain.com` (if applicable)
+   - **Authorized redirect URIs:**
+     - `https://your-project.vercel.app/__/auth/handler`
+     - `https://your-custom-domain.com/__/auth/handler` (if applicable)
+   - Click **Create**
+   - **Note:** Copy the Client ID - you may need it later, but Firebase will typically auto-detect it
+
+**Note:** The redirect URI format `*/__/auth/handler` is Firebase's default OAuth callback handler. If you're using custom domains, make sure both the Vercel domain and custom domain are added.
+
+**Can't access Google Cloud Console?** 
+- Firebase projects are Google Cloud projects under the hood
+- You may need to enable Google Cloud Console access: Firebase Console → Project Settings → General → Cloud Resource Location → Enable Google Cloud Console
 
 ## Step 5: Test Your Deployment
 
@@ -112,9 +187,24 @@ You need to add your Vercel domain to Firebase Auth allowed domains:
 - Make sure all `NEXT_PUBLIC_*` variables are added in Vercel
 - Redeploy after adding variables
 
-### "Firebase Auth not working"
-- Check that your Vercel domain is added to Firebase Authorized domains
-- Verify environment variables are correct
+### "Firebase Auth not working" / "Google Sign-In popup closes immediately"
+- **Check Firebase Authorized Domains:**
+  - Go to Firebase Console → Authentication → Settings → Authorized domains
+  - Ensure your Vercel domain (`*.vercel.app`) is added
+  - Ensure any custom domains are added
+- **Check Google Cloud Console OAuth Configuration:**
+  - Go to Google Cloud Console → APIs & Services → Credentials
+  - Edit your OAuth 2.0 Client ID
+  - Verify your Vercel domain is in "Authorized JavaScript origins"
+  - Verify the redirect URI `https://your-domain.com/__/auth/handler` is in "Authorized redirect URIs"
+- **Verify environment variables are correct:**
+  - Double-check `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` matches your Firebase project
+  - Ensure all Firebase env vars are set in Vercel
+  - Redeploy after adding/changing environment variables
+- **Check browser console:**
+  - Open browser DevTools (F12) → Console tab
+  - Look for specific error messages when clicking "Sign in with Google"
+  - Common errors: `auth/unauthorized-domain`, `auth/popup-blocked`, `auth/popup-closed-by-user`
 
 ### "Links not redirecting"
 - Check browser console for errors
