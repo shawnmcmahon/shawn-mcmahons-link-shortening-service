@@ -42,11 +42,22 @@ export default function LinkItem({ link, onDeleted }: LinkItemProps) {
     <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="font-mono text-sm text-blue-600 font-semibold break-all">
               /s/{link.shortCode}
             </span>
             <CopyButton text={shortUrl} className="text-xs" />
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined' && shortUrl) {
+                  window.open(shortUrl, "_blank", "noopener,noreferrer");
+                }
+              }}
+              className="px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-blue-600 text-white hover:bg-blue-700 border border-blue-700 flex-shrink-0"
+            >
+              Visit
+            </button>
           </div>
           <a
             href={link.originalUrl}

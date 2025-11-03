@@ -165,9 +165,22 @@ export default function LinkAnalyticsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Shortened URL</label>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-sm text-blue-600 break-all">{shortUrl}</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-sm text-blue-600 break-all flex-1 min-w-0">{shortUrl}</span>
                 <CopyButton text={shortUrl} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && shortUrl) {
+                      window.open(shortUrl, "_blank", "noopener,noreferrer");
+                    }
+                  }}
+                  className="px-3 py-1.5 text-sm font-medium rounded-md transition-colors bg-blue-600 text-white hover:bg-blue-700 border border-blue-700 flex-shrink-0"
+                  style={{ display: 'block' }}
+                  data-testid="visit-button"
+                >
+                  Visit
+                </button>
               </div>
             </div>
 

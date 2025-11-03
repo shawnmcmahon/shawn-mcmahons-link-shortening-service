@@ -185,24 +185,33 @@ You need to add your Vercel domain to Firebase Auth allowed domains:
 
 **Important:** The `*.vercel.app` domain is based on your **project slug**, not the project name. Simply renaming your project in the dashboard won't change the domain.
 
-**To change the domain (e.g., from `link-shortening-service.vercel.app` to `lss.vercel.app`):**
+**Why you can't change it:** The project slug is set when you first create the project and typically **cannot be changed** afterward. The slug field is often not visible or editable in Settings → General.
 
-1. **Option A: Change Project Slug (if available)**
-   - Go to **Settings** → **General** → **Project Slug**
-   - Change it from `link-shortening-service` to `lss`
-   - Click **Save**
-   - The domain should update to `lss.vercel.app`
+**To get a shorter domain (e.g., from `link-shortening-service.vercel.app` to `links.vercel.app`):**
 
-2. **Option B: Create a New Project with Desired Slug**
-   - Create a new Vercel project and name it `lss` (the slug will be `lss`)
-   - Connect the same Git repository
-   - Copy all environment variables from the old project
-   - Delete the old project after confirming the new one works
+**Create a New Project with the Desired Slug:**
+1. In Vercel Dashboard, click **"Add New..."** → **"Project"**
+2. Import the **same Git repository** as your current project
+3. **Important:** When naming the project, use your desired short name (e.g., `links`). The project slug will be auto-generated from this name.
+   - If you want `links.vercel.app`, name your project `links`
+   - The slug is derived from the project name (spaces become hyphens, special chars removed)
+4. Complete the deployment setup
+5. **Copy all environment variables** from your old project:
+   - Go to old project → **Settings** → **Environment Variables**
+   - Go to new project → **Settings** → **Environment Variables**
+   - Add all the same variables with the same values
+6. **Update Firebase and OAuth settings** with the new domain
+7. Test that everything works on the new domain
+8. Once confirmed, you can delete the old project (optional)
 
 **After changing the domain, remember to:**
-- Update Firebase Authorized Domains with the new domain
-- Update Google OAuth settings with the new domain
+- Update Firebase Authorized Domains with the new domain (`links.vercel.app`)
+- Update Google OAuth settings in Google Cloud Console with the new domain
 - Redeploy to ensure everything works correctly
+
+**Alternative: Use a Custom Domain**
+- If you own a domain (e.g., `links.co`, `lnk.to`), you can add it in **Settings** → **Domains**
+- This gives you a short, custom URL without creating a new project
 
 ## Troubleshooting
 
@@ -238,6 +247,18 @@ You need to add your Vercel domain to Firebase Auth allowed domains:
 - Check the build logs in Vercel Dashboard
 - Ensure all dependencies are in `package.json`
 - Make sure Node.js version is compatible (Vercel uses Node 18+ by default)
+
+### "Cannot change project slug" / "Domain not shortened after renaming project"
+- **The project slug cannot be changed after creation** - it's locked when the project is first created
+- Renaming the project name does NOT change the `*.vercel.app` domain
+- **Solution:** Create a new project with your desired short name (see "Changing Your Vercel Domain" section above)
+- **Note:** You cannot manually add `*.vercel.app` domains as aliases - they're automatically generated from the project slug
+
+### "Cannot add links.vercel.app since it's aliased to another deployment"
+- This means `links.vercel.app` is already taken by another Vercel project (possibly in another account, or another project in your account)
+- **Solution 1:** Try a different short name (e.g., `lnk`, `go`, `s`)
+- **Solution 2:** Create a new project with a different name
+- **Solution 3:** Use a custom domain you own instead of trying to use an existing `*.vercel.app` domain
 
 ## Post-Deployment Checklist
 
